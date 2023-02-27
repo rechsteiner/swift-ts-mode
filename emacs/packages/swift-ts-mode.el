@@ -5,6 +5,7 @@
 ;;
 ;; Todos:
 ;; - [ ] font-lock (syntax highlight)
+;; - [ ] highlight builtin types (can this be provided by eglot?)
 ;; - [x] indentation
 ;; - [x] Imenu
 ;; - [x] defun navigation
