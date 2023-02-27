@@ -1,12 +1,13 @@
 ;;; swift-ts-mode.el --- tree-sitter support for Swift  -*- lexical-binding: t; -*-
 
-;; TODO
-;; - [ ] font-lock (syntax highlight)
-;; - [ ] indentation
-;; - [ ] Imenu
-;; - [ ] which-func
-;; - [ ] defun navigation
 ;; Stater guide: https://archive.casouri.cc/note/2023/tree-sitter-starter-guide/index.html
+;; tree-sitter-swift: https://github.com/alex-pinkus/tree-sitter-swift
+;;
+;; Todos:
+;; - [ ] font-lock (syntax highlight)
+;; - [x] indentation
+;; - [x] Imenu
+;; - [x] defun navigation
 
 (require 'treesit)
 (require 'c-ts-common) ; For comment indent and filling.
@@ -40,6 +41,8 @@
      ((parent-is "comment") prev-adaptive-prefix 0)
      ((parent-is "statements") parent-bol 0)
      ((parent-is "switch_statement") parent-bol 0)
+     ((parent-is "guard_statement") parent-bol swift-ts-mode-indent-offset)
+     ((parent-is "protocol_body") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "switch_entry") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "lambda_literal") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "catch_block") parent-bol swift-ts-mode-indent-offset)
@@ -100,7 +103,7 @@
     (getter_specifier) (setter_specifier) (modify_specifier))
   "Swift keywords for tree-sitter font-locking.") 
 
-;; TODO: Why is break not a keyword?
+;; TODO: Why is break not a keyword? And do we need a separate feature for loops?
 (defvar swift-ts-mode--loops
   '("while" "repeat" "continue" "break")
   "Swift loops for tree-sitter font-locking.")
@@ -133,7 +136,6 @@
    :language 'swift
    :feature 'definition
    '(
-     ;; TODO: Look into these https://github.com/alex-pinkus/tree-sitter-swift/blob/main/queries/highlights.scm#L9
      (function_declaration (simple_identifier) @font-lock-function-name-face)
      (call_expression (simple_identifier) @font-lock-type-face)
      (parameter external_name: (simple_identifier) @font-lock-bracket-face)
@@ -158,7 +160,7 @@
      ;; correct but doesn't give enough contrast with the types).
      (value_argument name: (simple_identifier) @font-lock-property-name-face)
 
-     ;; TODO: Move into property feature
+     ;; TODO: Move into property feature?
      (enum_entry (simple_identifier) @font-lock-property-name-face)
      (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face)
      ((attribute) @font-lock-type-face)
@@ -193,14 +195,15 @@
    `(((simple_identifier) @font-lock-variable-name-face)
      (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
 
-   :language 'swift
-   :feature 'bracket
-   `([,@swift-ts-mode--brackets] @font-lock-bracket-face)
-   
+   ;; Must before bracket so private(set) etc. is marked as keywords.
    :language 'swift
    :feature 'keyword
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
      (lambda_literal "in" @font-lock-operator-face))
+
+   :language 'swift
+   :feature 'bracket
+   `([,@swift-ts-mode--brackets] @font-lock-bracket-face)
 
    :language 'swift
    :feature 'operator
@@ -229,6 +232,53 @@
    '([(integer_literal) (real_literal) (hex_literal) (oct_literal) (bin_literal)] @font-lock-number-face))
   "Tree-sitter font-lock settings for `swift-ts-mode'.")
 
+(defun swift-ts-mode--protocol-node-p (node)
+  "Return t if NODE is a protocol."
+  (and 
+   (string-equal "protocol_declaration" (treesit-node-type node))
+   (string-equal "protocol"
+                 (treesit-node-text
+                  (treesit-node-child-by-field-name node "declaration_kind") t))))
+
+(defun swift-ts-mode--class-declaration-node-p (name node)
+  "Return t if NODE is matches the given NAME."
+  (and 
+   (string-equal "class_declaration" (treesit-node-type node))
+   (string-equal name
+                 (treesit-node-text
+                  (treesit-node-child-by-field-name node "declaration_kind") t))))
+
+(defun swift-ts-mode--enum-node-p (node)
+  "Return t if NODE is an enum."
+  (swift-ts-mode--class-declaration-node-p "enum" node))
+
+(defun swift-ts-mode--class-node-p (node)
+  "Return t if NODE is a class."
+  (swift-ts-mode--class-declaration-node-p "class" node))
+
+(defun swift-ts-mode--actor-node-p (node)
+  "Return t if NODE is an actor."
+  (swift-ts-mode--class-declaration-node-p "actor" node))
+
+(defun swift-ts-mode--struct-node-p (node)
+  "Return t if NODE is a struct."
+  (swift-ts-mode--class-declaration-node-p "struct" node))
+
+(defun swift-ts-mode--defun-name (node)
+  "Return the defun name of NODE.
+Return nil if there is no name or if NODE is not a defun node."
+  (pcase (treesit-node-type node)
+    ("class_declaration"
+     (treesit-node-text
+      (treesit-node-child-by-field-name node "name") t))
+    ("function_declaration"
+     (treesit-node-text
+      (treesit-node-child-by-field-name node "name") t))
+    ("protocol_declaration"
+     (treesit-node-text
+      (treesit-node-child-by-field-name node "name") t))
+    ))
+
 ;;;###autoload
 (define-derived-mode swift-ts-mode prog-mode "Swift"
   "Major mode for editing Swift, powered by tree-sitter."
@@ -243,10 +293,25 @@
 
     ;; Font-lock
     (setq-local treesit-font-lock-settings swift-ts-mode--font-lock-settings)
-    
     ;; TODO: Split features into different levels
     (setq-local treesit-font-lock-feature-list
                 '((number type variable definition string comment keyword operator loops bracket error delimiter constant)))
+
+    ;; Navigation.
+    (setq-local treesit-defun-type-regexp
+                (regexp-opt '("class_declaration"
+                              "function_declaration"
+                              "protocol_declaration")))
+    (setq-local treesit-defun-name-function #'swift-ts-mode--defun-name)
+
+    ;; Imenu.
+    (setq-local treesit-simple-imenu-settings
+                `(("Enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
+                  ("Class" "\\class_declaration\\'" swift-ts-mode--class-node-p nil)
+                  ("Struct" "\\class_declaration\\'" swift-ts-mode--struct-node-p nil)
+                  ("Protocol" "\\protocol_declaration\\'" swift-ts-mode--protocol-node-p nil)
+                  ("Func" "\\function_declaration\\'" nil nil)
+                  ("Actor" "\\class_declaration\\'" swift-ts-mode--actor-node-p nil)))
 
     ;; Indentation
     (setq-local indent-tabs-mode nil
