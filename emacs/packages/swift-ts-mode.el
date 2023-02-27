@@ -97,16 +97,12 @@
     "indirect" "nonisolated" "override" "convenience" "required" "some"
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
     "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil"
-    (throw_keyword) (catch_keyword) (else) (default_keyword) (throws) (where_keyword)
-    (visibility_modifier) (member_modifier) (function_modifier)
-    (property_modifier) (parameter_modifier) (inheritance_modifier)
-    (getter_specifier) (setter_specifier) (modify_specifier))
-  "Swift keywords for tree-sitter font-locking.") 
-
-;; TODO: Why is break not a keyword? And do we need a separate feature for loops?
-(defvar swift-ts-mode--loops
-  '("while" "repeat" "continue" "break")
-  "Swift loops for tree-sitter font-locking.")
+    "while" "repeat" "continue" "break" (throw_keyword) (catch_keyword)
+    (else) (default_keyword) (throws) (where_keyword) (visibility_modifier)
+    (member_modifier) (function_modifier) (property_modifier)
+    (parameter_modifier) (inheritance_modifier) (getter_specifier)
+    (setter_specifier) (modify_specifier))
+  "Swift keywords for tree-sitter font-locking.")
 
 (defvar swift-ts-mode--brackets
   '("(" ")" "[" "]" "{" "}")
@@ -130,14 +126,38 @@
    '((ERROR) @font-lock-warning-face)
 
    :language 'swift
+   :feature 'string
+   '([
+      "\"" "\"\"\""
+      (line_str_text)
+      (str_escaped_char)
+      (multi_line_str_text)
+      (raw_str_part)
+      (raw_str_end_part)
+      (raw_str_interpolation_start)
+      (regex_literal)] @font-lock-string-face)
+
+   :language 'swift
    :feature 'delimiter
    '((["." ";" ":" ","]) @font-lock-delimiter-face)
+
+   :language 'swift
+   :feature 'function
+   '((navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)
+     ((directive) @font-lock-preprocessor-face))
+
+   :language 'swift
+   :feature 'property
+   '((enum_entry (simple_identifier) @font-lock-property-name-face)
+     (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face)
+     ((attribute) @font-lock-type-face))
 
    :language 'swift
    :feature 'definition
    '(
      (function_declaration (simple_identifier) @font-lock-function-name-face)
-     (call_expression (simple_identifier) @font-lock-type-face)
+     
+     ;; TODO: Decide on face
      (parameter external_name: (simple_identifier) @font-lock-bracket-face)
      (parameter name: (simple_identifier) @font-lock-bracket-face)
      (type_parameter (type_identifier) @font-lock-bracket-face)
@@ -148,8 +168,6 @@
      (prefix_expression (simple_identifier) @font-lock-function-call-face)
      (call_expression (simple_identifier) @font-lock-function-call-face)
      
-     ;; TODO: Find correct faces
-     (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)
      ;; TODO: Highlight Types
      ;;(navigation_expression
      ;; (simple_identifier) @type) ; SomeType.method(): highlight SomeType as a type
@@ -159,47 +177,29 @@
      ;; TODO: Find better face (@font-lock-type-face is maybe more
      ;; correct but doesn't give enough contrast with the types).
      (value_argument name: (simple_identifier) @font-lock-property-name-face)
-
-     ;; TODO: Move into property feature?
-     (enum_entry (simple_identifier) @font-lock-property-name-face)
-     (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face)
-     ((attribute) @font-lock-type-face)
-
-     ((self_expression) @font-lock-keyword-face)
-
-     ;; TODO: Move into different feature?
-     ((directive) @font-lock-preprocessor-face)
-     
-     (function_declaration "init" @font-lock-keyword-face)
-     (class_declaration (type_identifier) @font-lock-type-face)
-     (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face)
      )
 
    :language 'swift
-   :feature 'string
-   '([
-      "\"" "\"\"\""
-      (line_str_text)
-      (str_escaped_char)
-      (multi_line_str_text)
-      (raw_str_part)
-      (raw_str_end_part)
-      (raw_str_interpolation_start)] @font-lock-string-face)
-   
-   :language 'swift
    :feature 'type
-   `((type_identifier) @font-lock-type-face)
+   `(((type_identifier) @font-lock-type-face)
+     (call_expression (simple_identifier) @font-lock-type-face)
+     (class_declaration (type_identifier) @font-lock-type-face)
+     (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face))
 
    :language 'swift
    :feature 'variable
    `(((simple_identifier) @font-lock-variable-name-face)
      (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
 
-   ;; Must before bracket so private(set) etc. is marked as keywords.
+   ;; Must be before 'bracket to ensure "private(set)" etc. is marked as keywords.
    :language 'swift
    :feature 'keyword
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
-     (lambda_literal "in" @font-lock-operator-face))
+     (lambda_literal "in" @font-lock-operator-face)
+     (for_statement "in" @font-lock-keyword-face)
+     (for_statement "for" @font-lock-keyword-face)
+     (function_declaration "init" @font-lock-keyword-face)
+     ((self_expression) @font-lock-keyword-face))
 
    :language 'swift
    :feature 'bracket
@@ -213,19 +213,10 @@
      (ternary_expression ":" @font-lock-operator-face))
 
    :language 'swift
-   :feature 'loops
-   `([,@swift-ts-mode--loops] @font-lock-keyword-face
-     (for_statement "for" @font-lock-keyword-face)
-     (for_statement "in" @font-lock-keyword-face))
-
-   :language 'swift
    :feature 'constant
    `((boolean_literal) @font-lock-constant-face
       ;; (:match "^[A-Z][A-Z\\d_]*$" @font-lock-constant-face)
       )
-
-   ;; TODO: Add regex literals
-   ;; (regex_literal) @string.regex
 
    :language 'swift
    :feature 'number
@@ -293,9 +284,11 @@ Return nil if there is no name or if NODE is not a defun node."
 
     ;; Font-lock
     (setq-local treesit-font-lock-settings swift-ts-mode--font-lock-settings)
-    ;; TODO: Split features into different levels
     (setq-local treesit-font-lock-feature-list
-                '((number type variable definition string comment keyword operator loops bracket error delimiter constant)))
+                '(( comment definition )
+                  ( keyword string )
+                  ( constant number type function property variable )
+                  ( bracket delimiter error operator  )))
 
     ;; Navigation.
     (setq-local treesit-defun-type-regexp
@@ -306,11 +299,11 @@ Return nil if there is no name or if NODE is not a defun node."
 
     ;; Imenu.
     (setq-local treesit-simple-imenu-settings
-                `(("Enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
+                `(("Func" "\\function_declaration\\'" nil nil)
+                  ("Enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
                   ("Class" "\\class_declaration\\'" swift-ts-mode--class-node-p nil)
                   ("Struct" "\\class_declaration\\'" swift-ts-mode--struct-node-p nil)
                   ("Protocol" "\\protocol_declaration\\'" swift-ts-mode--protocol-node-p nil)
-                  ("Func" "\\function_declaration\\'" nil nil)
                   ("Actor" "\\class_declaration\\'" swift-ts-mode--actor-node-p nil)))
 
     ;; Indentation
