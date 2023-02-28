@@ -30,6 +30,7 @@
   :safe 'integerp
   :group 'swift)
 
+;; TODO: Improve switch case handling
 (defvar swift-ts-mode--indent-rules
   `((swift
      ((parent-is "source_file") point-min 0)
@@ -93,7 +94,7 @@
     table)
   "Syntax table for `swift-ts-mode'.")
 
-;; Replace with 'conditional? https://github.com/alex-pinkus/tree-sitter-swift/blob/main/queries/highlights.scm#L85
+;; TODO: Handle try separately from try! and try?
 (defvar swift-ts-mode--keywords
   '("typealias" "struct" "class" "actor" "enum" "protocol" "extension"
     "indirect" "nonisolated" "override" "convenience" "required" "some"
@@ -119,6 +120,16 @@
 (defvar swift-ts-mode--font-lock-settings
   (treesit-font-lock-rules
    :language 'swift
+   :feature 'property
+   '(
+     (attribute
+      ["@" @font-lock-type-face
+       (user_type (type_identifier) @font-lock-type-face)])
+     (class_body
+      (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face))
+     (enum_entry (simple_identifier) @font-lock-property-name-face))
+   
+   :language 'swift
    :feature 'comment
    '((comment) @font-lock-comment-face)
 
@@ -140,60 +151,39 @@
       (regex_literal)] @font-lock-string-face)
 
    :language 'swift
-   :feature 'delimiter
-   '((["." ";" ":" ","]) @font-lock-delimiter-face)
+   :feature 'definition
+   '(
+     (function_declaration (simple_identifier) @font-lock-function-name-face)
+
+     ;; TODO: Should this be inside 'variable feature?
+     (parameter external_name: (simple_identifier) @font-lock-variable-name-face)
+     (parameter name: (simple_identifier) @font-lock-variable-name-face)
+     (tuple_type_item name: (simple_identifier) @font-lock-variable-name-face)
+     (type_parameter (type_identifier) @font-lock-variable-name-face)
+     (inheritance_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
+     (equality_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
+     (lambda_parameter (simple_identifier) @font-lock-variable-name-face)
+     )
 
    :language 'swift
    :feature 'function
    '((navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)
-     ((directive) @font-lock-preprocessor-face))
-
-   :language 'swift
-   :feature 'property
-   '((enum_entry (simple_identifier) @font-lock-property-name-face)
-     (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face)
-     ((attribute) @font-lock-type-face))
-
-   :language 'swift
-   :feature 'definition
-   '(
-     (function_declaration (simple_identifier) @font-lock-function-name-face)
-     
-     ;; TODO: Decide on face
-     (parameter external_name: (simple_identifier) @font-lock-bracket-face)
-     (parameter name: (simple_identifier) @font-lock-bracket-face)
-     (type_parameter (type_identifier) @font-lock-bracket-face)
-     (inheritance_constraint (identifier (simple_identifier)) @font-lock-bracket-face)
-     (equality_constraint (identifier (simple_identifier)) @font-lock-bracket-face)
-
-     ;; TODO: Decide on face
+     ((directive) @font-lock-preprocessor-face)
      (prefix_expression (simple_identifier) @font-lock-function-call-face)
-     (call_expression (simple_identifier) @font-lock-function-call-face)
-     
-     ;; TODO: Highlight Types
-     ;;(navigation_expression
-     ;; (simple_identifier) @type) ; SomeType.method(): highlight SomeType as a type
-     ;; (#match? @type "^[A-Z]")
-     ;; (call_expression (navigation_expression (navigation_suffix (simple_identifier))) @font-lock-function-call-face)
-
-     ;; TODO: Find better face (@font-lock-type-face is maybe more
-     ;; correct but doesn't give enough contrast with the types).
-     (value_argument name: (simple_identifier) @font-lock-property-name-face)
-     )
+     (call_expression (simple_identifier) @font-lock-function-call-face))
 
    :language 'swift
    :feature 'type
    `(((type_identifier) @font-lock-type-face)
      (call_expression (simple_identifier) @font-lock-type-face)
      (class_declaration (type_identifier) @font-lock-type-face)
-     (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face))
+     (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face)
 
-   :language 'swift
-   :feature 'variable
-   `(((simple_identifier) @font-lock-variable-name-face)
-     (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
+     ;; TODO: Do we need to match on capital words like here?
+     ;; https://github.com/alex-pinkus/tree-sitter-swift/blob/main/queries/highlights.scm#L69
+     (navigation_expression
+      target: (simple_identifier) @font-lock-type-face))
 
-   ;; Must be before 'bracket to ensure "private(set)" etc. is marked as keywords.
    :language 'swift
    :feature 'keyword
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
@@ -204,10 +194,6 @@
      ((self_expression) @font-lock-keyword-face))
 
    :language 'swift
-   :feature 'bracket
-   `([,@swift-ts-mode--brackets] @font-lock-bracket-face)
-
-   :language 'swift
    :feature 'operator
    `(
      [,@swift-ts-mode--operators] @font-lock-operator-face
@@ -215,14 +201,27 @@
      (ternary_expression ":" @font-lock-operator-face))
 
    :language 'swift
+   :feature 'variable
+   `(((simple_identifier) @font-lock-variable-ref-face))
+
+   :language 'swift
    :feature 'constant
-   `((boolean_literal) @font-lock-constant-face
-      ;; (:match "^[A-Z][A-Z\\d_]*$" @font-lock-constant-face)
-      )
+   `((boolean_literal) @font-lock-constant-face)
 
    :language 'swift
    :feature 'number
-   '([(integer_literal) (real_literal) (hex_literal) (oct_literal) (bin_literal)] @font-lock-number-face))
+   '([(integer_literal) (real_literal) (hex_literal) (oct_literal) (bin_literal)] @font-lock-number-face)
+      
+   ;; Putting 'bracket and 'delimiter last to that it doesn't override
+   ;; cases like private(set) and \.keyPaths.
+   :language 'swift
+   :feature 'bracket
+   `([,@swift-ts-mode--brackets] @font-lock-bracket-face)
+
+   :language 'swift
+   :feature 'delimiter
+   '((["." ";" ":" ","]) @font-lock-delimiter-face))
+  
   "Tree-sitter font-lock settings for `swift-ts-mode'.")
 
 (defun swift-ts-mode--protocol-node-p (node)
@@ -289,8 +288,8 @@ Return nil if there is no name or if NODE is not a defun node."
     (setq-local treesit-font-lock-feature-list
                 '(( comment definition )
                   ( keyword string )
-                  ( constant number type function property variable )
-                  ( bracket delimiter error operator  )))
+                  ( constant number type function property )
+                  ( bracket delimiter error operator variable )))
 
     ;; Navigation.
     (setq-local treesit-defun-type-regexp
