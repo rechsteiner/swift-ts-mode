@@ -5,10 +5,10 @@
 ;;
 ;; Todos:
 ;; - [ ] font-lock (syntax highlight)
+;; - [ ] highlight property refs using @font-lock-property-ref-face
 ;; - [ ] highlight builtin types (can this be provided by eglot?)
-;; - [x] indentation
-;; - [x] Imenu
-;; - [x] defun navigation
+;; - [ ] indentation on switch cases
+;; - [ ] indentation of modifiers after closing } bracket
 
 (require 'treesit)
 (require 'c-ts-common) ; For comment indent and filling.
@@ -72,9 +72,12 @@
      ((parent-is "navigation_expression") parent-bol swift-ts-mode-indent-offset)))
   "Tree-sitter indent rules for `swift-ts-mode'.")
 
-;; TODO: Figure out what a syntax table does and how it should be for Swift.
 (defvar swift-ts-mode--syntax-table
   (let ((table (make-syntax-table)))
+    (modify-syntax-entry ?_   "_"      table)
+    (modify-syntax-entry ?$   "_"      table)
+    (modify-syntax-entry ?@   "_"      table)
+    (modify-syntax-entry ?#   "_"      table)
     (modify-syntax-entry ?+   "."      table)
     (modify-syntax-entry ?-   "."      table)
     (modify-syntax-entry ?=   "."      table)
@@ -83,7 +86,6 @@
     (modify-syntax-entry ?|   "."      table)
     (modify-syntax-entry ?^   "."      table)
     (modify-syntax-entry ?!   "."      table)
-    (modify-syntax-entry ?@   "."      table)
     (modify-syntax-entry ?~   "."      table)
     (modify-syntax-entry ?<   "."      table)
     (modify-syntax-entry ?>   "."      table)
@@ -114,7 +116,7 @@
 (defvar swift-ts-mode--operators
   '("!" "+" "-" "*" "/" "%" "=" "+=" "-=" "*=" "/="
     "<" ">" "<=" ">=" "++" "--" "&" "~" "%=" "!=" "!==" "==" "===" "??"
-    "->" "..<" "...")
+    "->" "..<" "..." (bang))
   "Swift operators for tree-sitter font-locking.")
 
 (defvar swift-ts-mode--font-lock-settings
@@ -125,6 +127,20 @@
      (attribute
       ["@" @font-lock-type-face
        (user_type (type_identifier) @font-lock-type-face)])
+
+     ;; TODO: Match on any level of switch patterns
+     (switch_pattern 
+      (pattern "." (simple_identifier) @font-lock-property-ref-face))
+     
+     (switch_pattern 
+      (pattern (simple_identifier)
+               (pattern "." (simple_identifier) @font-lock-property-ref-face)))
+
+     (switch_pattern 
+      (pattern (simple_identifier)
+               (pattern (simple_identifier)
+                        (pattern "." (simple_identifier) @font-lock-property-ref-face))))
+     
      (class_body
       (property_declaration (pattern (simple_identifier)) @font-lock-property-name-face))
      (enum_entry (simple_identifier) @font-lock-property-name-face))
@@ -154,8 +170,6 @@
    :feature 'definition
    '(
      (function_declaration (simple_identifier) @font-lock-function-name-face)
-
-     ;; TODO: Should this be inside 'variable feature?
      (parameter external_name: (simple_identifier) @font-lock-variable-name-face)
      (parameter name: (simple_identifier) @font-lock-variable-name-face)
      (tuple_type_item name: (simple_identifier) @font-lock-variable-name-face)
@@ -167,7 +181,9 @@
 
    :language 'swift
    :feature 'function
-   '((navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)
+   '((call_expression
+      (navigation_expression
+       suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
      ((directive) @font-lock-preprocessor-face)
      (prefix_expression (simple_identifier) @font-lock-function-call-face)
      (call_expression (simple_identifier) @font-lock-function-call-face))
@@ -178,11 +194,8 @@
      (call_expression (simple_identifier) @font-lock-type-face)
      (class_declaration (type_identifier) @font-lock-type-face)
      (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face)
-
-     ;; TODO: Do we need to match on capital words like here?
-     ;; https://github.com/alex-pinkus/tree-sitter-swift/blob/main/queries/highlights.scm#L69
-     (navigation_expression
-      target: (simple_identifier) @font-lock-type-face))
+     ((navigation_expression (simple_identifier) @font-lock-type-face)
+      (:match "^[A-Z]" @font-lock-type-face)))
 
    :language 'swift
    :feature 'keyword
@@ -195,8 +208,7 @@
 
    :language 'swift
    :feature 'operator
-   `(
-     [,@swift-ts-mode--operators] @font-lock-operator-face
+   `([,@swift-ts-mode--operators] @font-lock-operator-face
      (ternary_expression "?" @font-lock-operator-face)
      (ternary_expression ":" @font-lock-operator-face))
 
