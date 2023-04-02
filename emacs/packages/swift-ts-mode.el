@@ -1,17 +1,6 @@
 ;;; swift-ts-mode.el --- tree-sitter support for Swift  -*- lexical-binding: t; -*-
-
-;; Stater guide: https://archive.casouri.cc/note/2023/tree-sitter-starter-guide/index.html
-;; tree-sitter-swift: https://github.com/alex-pinkus/tree-sitter-swift
-;;
-;; Todos:
-;; - [ ] font-lock (syntax highlight)
-;; - [ ] highlight property refs using @font-lock-property-ref-face
-;; - [ ] highlight builtin types (can this be provided by eglot?)
-;; - [ ] indentation on switch cases
-;; - [ ] indentation of modifiers after closing } bracket
-
 (require 'treesit)
-(require 'c-ts-common) ; For comment indent and filling.
+(require 'c-ts-common)
 
 (declare-function treesit-parser-create "treesit.c")
 (declare-function treesit-induce-sparse-tree "treesit.c")
@@ -30,7 +19,54 @@
   :safe 'integerp
   :group 'swift)
 
-;; TODO: Improve switch case handling
+(defun swift-ts-mode--treesit-last-child (node)
+  (treesit-node-child node (- (treesit-node-child-count node) 1)))
+
+(defun swift-ts-mode--navigation-expression-indent (node parent bol &rest _)
+  (let* ((prev-node
+          (swift-ts-mode--treesit-last-child
+           (treesit-node-child (treesit-node-prev-sibling node) 1)))
+         
+         (min-point
+          (save-excursion
+            (goto-char (treesit-node-start prev-node))
+            (back-to-indentation)
+            (point)))
+         
+         (max-point
+          (save-excursion
+            (goto-char (treesit-node-end prev-node))
+            (back-to-indentation)
+            (point))))
+
+    (cond
+     ;; If the previous line starts with a dot, use the same
+     ;; indentation as that line.
+     ((equal "." (treesit-node-text (treesit-node-at min-point))) min-point)
+     
+     ;; If the previous node does not start with a dot, we
+     ;; compare the start and end point of that node to see if
+     ;; the "value_arguments" or "lambda_literals" wrap on
+     ;; multiple lines or not. This ensures that we only indent
+     ;; the current node for code like this:
+     ;;
+     ;; SomeView()
+     ;;     .padding()
+     ;;
+     ;; ContentView {}
+     ;;     .padding()
+     ((eq min-point max-point) (+ min-point swift-ts-mode-indent-offset))
+     
+     ;; Default to using the same indentation as the previous
+     ;; node. This ensures that we don't indent the current node
+     ;; when wrapping literals on it's own line like this:
+     ;;
+     ;; ContentView {
+     ;; 
+     ;; }
+     ;; .padding()
+     (t min-point))))
+
 (defvar swift-ts-mode--indent-rules
   `((swift
      ((parent-is "source_file") point-min 0)
@@ -69,7 +105,7 @@
      ((parent-is "computed_property") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "property_declaration") parent-bol 0)
      ((parent-is "modifiers") parent-bol 0)
-     ((parent-is "navigation_expression") parent-bol swift-ts-mode-indent-offset)))
+     ((parent-is "navigation_expression") swift-ts-mode--navigation-expression-indent 0)))
   "Tree-sitter indent rules for `swift-ts-mode'.")
 
 (defvar swift-ts-mode--syntax-table
