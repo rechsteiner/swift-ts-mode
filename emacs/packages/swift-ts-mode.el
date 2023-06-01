@@ -138,7 +138,7 @@
     "indirect" "nonisolated" "override" "convenience" "required" "some"
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
     "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil"
-    "while" "repeat" "continue" "break" (throw_keyword) (catch_keyword)
+    "while" "repeat" "continue" "break" "lazy" (throw_keyword) (catch_keyword)
     (else) (default_keyword) (throws) (where_keyword) (visibility_modifier)
     (member_modifier) (function_modifier) (property_modifier)
     (parameter_modifier) (inheritance_modifier) (getter_specifier)
