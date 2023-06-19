@@ -137,7 +137,7 @@
   '("typealias" "struct" "class" "actor" "enum" "protocol" "extension"
     "indirect" "nonisolated" "override" "convenience" "required" "some"
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
-    "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil"
+    "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil" "unowned"
     "while" "repeat" "continue" "break" "lazy" "weak" (throw_keyword) (catch_keyword)
     (else) (default_keyword) (throws) (where_keyword) (visibility_modifier)
     (member_modifier) (function_modifier) (property_modifier)
@@ -150,7 +150,7 @@
   "Swift brackets for tree-sitter font-locking.")
 
 (defvar swift-ts-mode--operators
-  '("!" "+" "-" "*" "/" "%" "=" "+=" "-=" "*=" "/="
+  '("+" "-" "*" "/" "%" "=" "+=" "-=" "*=" "/="
     "<" ">" "<=" ">=" "++" "--" "&" "~" "%=" "!=" "!==" "==" "===" "??"
     "->" "..<" "..." (bang))
   "Swift operators for tree-sitter font-locking.")
@@ -206,6 +206,8 @@
    :feature 'definition
    '(
      (function_declaration (simple_identifier) @font-lock-function-name-face)
+     ;; TODO: Use custom font face with fallback on default for parameters.
+     (value_argument (simple_identifier) @font-lock-type-face)
      (parameter external_name: (simple_identifier) @font-lock-variable-name-face)
      (parameter name: (simple_identifier) @font-lock-variable-name-face)
      (tuple_type_item name: (simple_identifier) @font-lock-variable-name-face)
@@ -220,6 +222,11 @@
    '((call_expression
       (navigation_expression
        suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
+
+     ;; TODO: Which feature does this belong?
+     (navigation_expression
+       suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-property-ref-face))
+     
      ((directive) @font-lock-preprocessor-face)
      (prefix_expression (simple_identifier) @font-lock-function-call-face)
      (call_expression (simple_identifier) @font-lock-function-call-face))
@@ -238,6 +245,8 @@
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
      (lambda_literal "in" @font-lock-operator-face)
      (for_statement "in" @font-lock-keyword-face)
+     ;; TODO: Only highlight "self" in capture lists
+     (capture_list_item (simple_identifier) @font-lock-keyword-face)
      (for_statement "for" @font-lock-keyword-face)
      (function_declaration "init" @font-lock-keyword-face)
      ((self_expression) @font-lock-keyword-face))
