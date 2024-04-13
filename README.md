@@ -2,7 +2,11 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A tree-sitter based major-mode for the [Swift](https://swift.org) programming language, with font-locking, imenu and indentation support. Based on the following tree-sitter grammar: [github.com/alex-pinkus/tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift)
+A tree-sitter based major-mode for the [Swift](https://swift.org) programming language, with support for font-locking, imenu and indentation. Based on the following tree-sitter grammar: [github.com/alex-pinkus/tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift).
+
+<br/>
+<img width="1070" height="590" alt="emacs-fs8" src="https://github.com/rechsteiner/swift-ts-mode/assets/1238984/9cadacb8-3708-4d69-9035-5ae967689219">
+<br/>
 
 ## Installing
 
