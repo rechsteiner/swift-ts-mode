@@ -47,9 +47,11 @@
   :group 'swift)
 
 (defun swift-ts-mode--treesit-last-child (node)
+  "Gets the last child of the given treesit NODE."
   (treesit-node-child node (- (treesit-node-child-count node) 1)))
 
-(defun swift-ts-mode--navigation-expression-indent (node parent bol &rest _)
+(defun swift-ts-mode--navigation-expression-indent (node &rest _)
+  "Handles indentation for the given navigation expression NODE."
   (let* ((prev-node
           (swift-ts-mode--treesit-last-child
            (treesit-node-child (treesit-node-prev-sibling node) 1)))
@@ -192,14 +194,14 @@
        (user_type (type_identifier) @font-lock-type-face)])
 
      ;; TODO: Match on any level of switch patterns
-     (switch_pattern 
+     (switch_pattern
       (pattern "." (simple_identifier) @font-lock-property-ref-face))
      
-     (switch_pattern 
+     (switch_pattern
       (pattern (simple_identifier)
                (pattern "." (simple_identifier) @font-lock-property-ref-face)))
 
-     (switch_pattern 
+     (switch_pattern
       (pattern (simple_identifier)
                (pattern (simple_identifier)
                         (pattern "." (simple_identifier) @font-lock-property-ref-face))))
@@ -310,7 +312,7 @@
 
 (defun swift-ts-mode--protocol-node-p (node)
   "Return t if NODE is a protocol."
-  (and 
+  (and
    (string-equal "protocol_declaration" (treesit-node-type node))
    (string-equal "protocol"
                  (treesit-node-text
@@ -318,7 +320,7 @@
 
 (defun swift-ts-mode--class-declaration-node-p (name node)
   "Return t if NODE is matches the given NAME."
-  (and 
+  (and
    (string-equal "class_declaration" (treesit-node-type node))
    (string-equal name
                  (treesit-node-text
