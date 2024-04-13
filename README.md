@@ -4,9 +4,7 @@
 
 A tree-sitter based major-mode for the [Swift](https://swift.org) programming language, with support for font-locking, imenu and indentation. Based on the following tree-sitter grammar: [github.com/alex-pinkus/tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift).
 
-<br/>
-<img width="1070" alt="Screenshot of swift-ts-mode in Emacs" src="https://github.com/rechsteiner/swift-ts-mode/assets/1238984/9cadacb8-3708-4d69-9035-5ae967689219">
-<br/>
+![Screenshot of swift-ts-mode in Emacs](https://github.com/rechsteiner/swift-ts-mode/assets/1238984/9cadacb8-3708-4d69-9035-5ae967689219)
 
 ## Installing
 
