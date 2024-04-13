@@ -2,19 +2,24 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-A tree-sitter based major-mode for the [Swift](https://swift.org) programming language.
-
-Built using the following tree-sitter grammar: [github.com/alex-pinkus/tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift)
+A tree-sitter based major-mode for the [Swift](https://swift.org) programming language, with font-locking, imenu and indentation support. Based on the following tree-sitter grammar: [github.com/alex-pinkus/tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift)
 
 ## Installing
 
-This package is available on [Melpa](https://melpa.org) and can be installed like this:
+This package is available on [Melpa](https://melpa.org):
 
 ```
 (use-package swift-ts-mode
     :ensure t)
 ```
 
-Or using the package manager of your choice. Alternatively, just copy the `swift-ts-mode.el` file directly into your config.
+For manual installation:
 
-You also need to install the [tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift) language grammar.
+```
+(load "path/to/swift-ts-mode.el")
+```
+
+## Requirements
+
+- Emacs 29.1 or above with tree-sitter support (see [tree-sitter starter guide](https://git.savannah.gnu.org/cgit/emacs.git/tree/admin/notes/tree-sitter/starter-guide?h=emacs-29))
+- [tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift) language grammar.
