@@ -378,10 +378,10 @@ Return nil if there is no name or if NODE is not a defun node."
     ;; Font-lock
     (setq-local treesit-font-lock-settings swift-ts-mode--font-lock-settings)
     (setq-local treesit-font-lock-feature-list
-                '(( comment definition )
-                  ( keyword string )
-                  ( constant number type function property )
-                  ( bracket delimiter error operator variable )))
+                '((comment definition)
+                  (keyword string)
+                  (constant number type function property)
+                  (bracket delimiter error operator variable)))
 
     ;; Navigation.
     (setq-local treesit-defun-type-regexp
