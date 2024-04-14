@@ -1,11 +1,13 @@
-;;; swift-ts-mode.el --- tree-sitter support for Swift  -*- lexical-binding: t; -*-
+;;; swift-ts-mode.el --- Major mode for Swift based on tree-sitter -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Rechsteiner
 
-;; Author   : Martin Rechsteiner
-;; Created  : February 2023
-;; Homepage : https://github.com/rechsteiner/swift-ts-mode
-;; Keywords : swift languages tree-sitter
+;; Author           : Martin Rechsteiner
+;; Version          : 0.1
+;; Created          : February 2023
+;; Homepage         : https://github.com/rechsteiner/swift-ts-mode
+;; Keywords         : swift languages tree-sitter
+;; Package-Requires : ((emacs "29.1"))
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -247,8 +249,7 @@
      (type_parameter (type_identifier) @font-lock-variable-name-face)
      (inheritance_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
      (equality_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
-     (lambda_parameter (simple_identifier) @font-lock-variable-name-face)
-     )
+     (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
 
    :language 'swift
    :feature 'function
@@ -360,8 +361,7 @@ Return nil if there is no name or if NODE is not a defun node."
       (treesit-node-child-by-field-name node "name") t))
     ("protocol_declaration"
      (treesit-node-text
-      (treesit-node-child-by-field-name node "name") t))
-    ))
+      (treesit-node-child-by-field-name node "name") t))))
 
 ;;;###autoload
 (define-derived-mode swift-ts-mode prog-mode "Swift"
