@@ -170,11 +170,11 @@
     "indirect" "nonisolated" "override" "convenience" "required" "some"
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
     "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil" "unowned"
-    "while" "repeat" "continue" "break" "lazy" "weak" (throw_keyword) (catch_keyword)
-    (else) (default_keyword) (throws) (where_keyword) (visibility_modifier)
-    (member_modifier) (function_modifier) (property_modifier)
-    (parameter_modifier) (inheritance_modifier) (getter_specifier)
-    (setter_specifier) (modify_specifier))
+    "while" "repeat" "continue" "break" "lazy" "weak" "didSet" "willSet" "init"
+    "deinit" "as" "as?" "as!" "any" "mutating" (throw_keyword) (catch_keyword) (else)
+    (default_keyword) (throws) (where_keyword) (visibility_modifier)
+    (member_modifier) (function_modifier) (property_modifier) (parameter_modifier)
+    (inheritance_modifier) (getter_specifier) (setter_specifier) (modify_specifier))
   "Swift keywords for tree-sitter font-locking.")
 
 (defvar swift-ts-mode--brackets
@@ -276,12 +276,14 @@
    :language 'swift
    :feature 'keyword
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
+     (super_expression "super" @font-lock-keyword-face)
+     (availability_condition "#available" @font-lock-keyword-face)
+     (availability_condition "#unavailable" @font-lock-keyword-face)
      (lambda_literal "in" @font-lock-operator-face)
      (for_statement "in" @font-lock-keyword-face)
      ;; TODO: Only highlight "self" in capture lists
      (capture_list_item (simple_identifier) @font-lock-keyword-face)
      (for_statement "for" @font-lock-keyword-face)
-     (function_declaration "init" @font-lock-keyword-face)
      ((self_expression) @font-lock-keyword-face))
 
    :language 'swift
