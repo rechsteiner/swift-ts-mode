@@ -212,7 +212,8 @@
    
    :language 'swift
    :feature 'comment
-   '((comment) @font-lock-comment-face)
+   '(((comment) @font-lock-comment-face)
+     ((multiline_comment) @font-lock-comment-face))
 
    :language 'swift
    :feature 'error
