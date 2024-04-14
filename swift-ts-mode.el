@@ -173,10 +173,12 @@
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
     "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil" "unowned"
     "while" "repeat" "continue" "break" "lazy" "weak" "didSet" "willSet" "init"
-    "deinit" "as" "as?" "as!" "any" "mutating" (throw_keyword) (catch_keyword) (else)
-    (default_keyword) (throws) (where_keyword) (visibility_modifier)
-    (member_modifier) (function_modifier) (property_modifier) (parameter_modifier)
-    (inheritance_modifier) (getter_specifier) (setter_specifier) (modify_specifier))
+    "deinit" "as" "as?" "as!" "any" "mutating" "nonmutating"
+    "#imageLiteral" "#colorLiteral" "#fileLiteral" "#keyPath" "#selector"
+    (throw_keyword) (catch_keyword) (else) (default_keyword) (throws) (where_keyword)
+    (visibility_modifier) (member_modifier) (function_modifier) (property_modifier)
+    (parameter_modifier) (inheritance_modifier) (getter_specifier) (setter_specifier)
+    (modify_specifier))
   "Swift keywords for tree-sitter font-locking.")
 
 (defvar swift-ts-mode--brackets
