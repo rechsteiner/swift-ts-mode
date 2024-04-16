@@ -1,6 +1,7 @@
 # swift-ts-mode
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![MELPA](https://melpa.org/packages/swift-ts-mode-badge.svg)](https://melpa.org/#/swift-ts-mode)
 
 A tree-sitter based major-mode for [Swift](https://swift.org), with support for font-locking, imenu and indentation. 
 Compatible with the following [tree-sitter-swift](https://github.com/alex-pinkus/tree-sitter-swift) grammar.
@@ -9,7 +10,7 @@ Compatible with the following [tree-sitter-swift](https://github.com/alex-pinkus
 
 ## Installing
 
-This package is available on [Melpa](https://melpa.org):
+This package is available on [Melpa](https://melpa.org/#/swift-ts-mode):
 
 ```
 (use-package swift-ts-mode
