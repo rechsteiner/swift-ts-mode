@@ -139,6 +139,7 @@
      ((parent-is "willset_clause") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "property_declaration") parent-bol 0)
      ((parent-is "modifiers") parent-bol 0)
+     (no-node parent-bol 0)
      ((parent-is "navigation_expression") swift-ts-mode--navigation-expression-indent 0)))
   "Tree-sitter indent rules for `swift-ts-mode'.")
 
