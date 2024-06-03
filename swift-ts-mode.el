@@ -282,7 +282,7 @@
      (super_expression "super" @font-lock-keyword-face)
      (availability_condition "#available" @font-lock-keyword-face)
      (availability_condition "#unavailable" @font-lock-keyword-face)
-     (lambda_literal "in" @font-lock-operator-face)
+     (lambda_literal "in" @font-lock-keyword-face)
      (for_statement "in" @font-lock-keyword-face)
      ;; TODO: Only highlight "self" in capture lists
      (capture_list_item (simple_identifier) @font-lock-keyword-face)
