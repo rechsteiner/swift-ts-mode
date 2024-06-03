@@ -406,6 +406,8 @@ Return nil if there is no name or if NODE is not a defun node."
     (setq-local indent-tabs-mode nil
                 treesit-simple-indent-rules swift-ts-mode--indent-rules)
 
+    (setq-local electric-indent-chars (append electric-indent-chars '(?.)))
+
     (treesit-major-mode-setup)))
 
 (if (treesit-ready-p 'swift)
