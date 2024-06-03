@@ -284,10 +284,10 @@
      (availability_condition "#unavailable" @font-lock-keyword-face)
      (lambda_literal "in" @font-lock-keyword-face)
      (for_statement "in" @font-lock-keyword-face)
-     ;; TODO: Only highlight "self" in capture lists
-     (capture_list_item (simple_identifier) @font-lock-keyword-face)
      (for_statement "for" @font-lock-keyword-face)
-     ((self_expression) @font-lock-keyword-face))
+     ((self_expression) @font-lock-keyword-face)
+     ((simple_identifier) @font-lock-keyword-face
+      (:match "^\\(:?self\\)$" @font-lock-keyword-face)))
 
    :language 'swift
    :feature 'operator
