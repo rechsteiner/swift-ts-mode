@@ -358,14 +358,36 @@
   "Return t if NODE is a struct."
   (swift-ts-mode--class-declaration-node-p "struct" node))
 
+(defun swift-ts-mode--parameter-name (parameter)
+  "Return the parameter name of the given PARAMETER node."
+  (let ((parameter-name
+         (treesit-node-text
+          (or (treesit-node-child-by-field-name parameter "external_name")
+              (treesit-node-child-by-field-name parameter "name")))))
+    (if parameter-name
+        (substring-no-properties parameter-name)
+      parameter-name)))
+
+(defun swift-ts-mode--function-name (node)
+  "Return the name including parameters of the given NODE."
+  (let ((name
+         (treesit-node-text
+          (treesit-node-child-by-field-name node "name") t))
+        (parameter-names
+         (remq nil (mapcar #'swift-ts-mode--parameter-name (treesit-node-children node "parameter")))))
+    (if (null parameter-names)
+        (concat name "()")
+      (concat name "(" (mapconcat 'identity parameter-names ":") ":)"))))
+
 (defun swift-ts-mode--defun-name (node)
   "Return the defun name of NODE.
 Return nil if there is no name or if NODE is not a defun node."
   (pcase (treesit-node-type node)
-    ("class_declaration"
-     (treesit-node-text
-      (treesit-node-child-by-field-name node "name") t))
+    ("init_declaration"
+     (swift-ts-mode--function-name node))
     ("function_declaration"
+     (swift-ts-mode--function-name node))
+    ("class_declaration"
      (treesit-node-text
       (treesit-node-child-by-field-name node "name") t))
     ("protocol_declaration"
@@ -401,7 +423,8 @@ Return nil if there is no name or if NODE is not a defun node."
 
     ;; Imenu.
     (setq-local treesit-simple-imenu-settings
-                `(("Func" "\\function_declaration\\'" nil nil)
+                `(("Init" "\\init_declaration\\'" nil nil)
+                  ("Func" "\\function_declaration\\'" nil nil)
                   ("Enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
                   ("Class" "\\class_declaration\\'" swift-ts-mode--class-node-p nil)
                   ("Struct" "\\class_declaration\\'" swift-ts-mode--struct-node-p nil)
