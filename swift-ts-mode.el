@@ -98,9 +98,19 @@
      ;; .padding()
      (t min-point))))
 
+(defun swift-ts-mode--default-indent (_n parent bol &rest _)
+  (if parent
+      (save-excursion
+        (goto-char (treesit-node-start parent))
+        (back-to-indentation)
+        (point))
+    (save-excursion
+      (goto-char bol)
+      (line-beginning-position))))
+
 (defvar swift-ts-mode--indent-rules
   `((swift
-     ((parent-is "source_file") point-min 0)
+     ((parent-is "source_file") column-0 0)
      ((node-is ")") parent-bol 0)
      ((node-is "]") parent-bol 0)
      ((node-is ">") parent-bol 0)
@@ -139,7 +149,7 @@
      ((parent-is "willset_clause") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "property_declaration") parent-bol 0)
      ((parent-is "modifiers") parent-bol 0)
-     (no-node parent-bol 0)
+     (no-node swift-ts-mode--default-indent 0)
      ((parent-is "navigation_expression") swift-ts-mode--navigation-expression-indent 0)))
   "Tree-sitter indent rules for `swift-ts-mode'.")
 
