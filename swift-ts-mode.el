@@ -54,11 +54,11 @@
       (treesit-node-child node (- (treesit-node-child-count node) 1))
     node))
 
-(defun swift-ts-mode--navigation-expression-indent (node &rest _)
+(defun swift-ts-mode--navigation-expression-indent (node parent &rest _)
   "Handles indentation for the given navigation expression NODE."
   (let* ((prev-node
           (swift-ts-mode--treesit-last-child
-           (treesit-node-prev-sibling node)))
+           (treesit-node-child-by-field-name parent "target")))
          
          (min-point
           (save-excursion
