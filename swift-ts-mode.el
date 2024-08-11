@@ -50,13 +50,15 @@
 
 (defun swift-ts-mode--treesit-last-child (node)
   "Gets the last child of the given treesit NODE."
-  (treesit-node-child node (- (treesit-node-child-count node) 1)))
+  (if (treesit-node-children node)
+      (treesit-node-child node (- (treesit-node-child-count node) 1))
+    node))
 
 (defun swift-ts-mode--navigation-expression-indent (node &rest _)
   "Handles indentation for the given navigation expression NODE."
   (let* ((prev-node
           (swift-ts-mode--treesit-last-child
-           (treesit-node-child (treesit-node-prev-sibling node) 1)))
+           (treesit-node-prev-sibling node)))
          
          (min-point
           (save-excursion
