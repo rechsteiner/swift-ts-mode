@@ -54,6 +54,15 @@
       (treesit-node-child node (- (treesit-node-child-count node) 1))
     node))
 
+(defun swift-ts-mode--value-arguments-indent (node parent bol &rest _)
+  "Return indentation for the given value argument NODE."
+  (if (treesit-node-prev-sibling node t)
+      (treesit-node-start (treesit-node-prev-sibling node t))
+    (save-excursion
+      (goto-char (treesit-node-start parent))
+      (back-to-indentation)
+      (+ (point) swift-ts-mode-indent-offset))))
+
 (defun swift-ts-mode--navigation-expression-indent (node parent &rest _)
   "Handles indentation for the given navigation expression NODE."
   (let* ((prev-node
@@ -141,7 +150,7 @@
      ((parent-is "computed_setter") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "enum_type_parameters") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "type_parameters") parent-bol swift-ts-mode-indent-offset)
-     ((parent-is "value_arguments") parent-bol swift-ts-mode-indent-offset)
+     ((parent-is "value_arguments") swift-ts-mode--value-arguments-indent 0)
      ((parent-is "array_literal") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "dictionary_literal") parent-bol swift-ts-mode-indent-offset)
      ((parent-is "computed_getter") parent-bol swift-ts-mode-indent-offset)
