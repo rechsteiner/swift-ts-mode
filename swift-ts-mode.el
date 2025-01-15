@@ -369,15 +369,16 @@
   "Return t if NODE is a struct."
   (swift-ts-mode--class-declaration-node-p "struct" node))
 
-(defun swift-ts-mode--parameter-name (parameter)
-  "Return the parameter name of the given PARAMETER node."
-  (let ((parameter-name
-         (treesit-node-text
-          (or (treesit-node-child-by-field-name parameter "external_name")
-              (treesit-node-child-by-field-name parameter "name")))))
-    (if parameter-name
-        (substring-no-properties parameter-name)
-      parameter-name)))
+(defun swift-ts-mode--parameter-name (node)
+  "Return the parameter name of the given parameter NODE."
+  (when (string-equal "parameter" (treesit-node-type node))
+    (let ((parameter-name
+           (treesit-node-text
+            (or (treesit-node-child-by-field-name node "external_name")
+                (treesit-node-child-by-field-name node "name")))))
+      (if parameter-name
+          (substring-no-properties parameter-name)
+        parameter-name))))
 
 (defun swift-ts-mode--function-name (node)
   "Return the name including parameters of the given NODE."
@@ -385,7 +386,7 @@
          (treesit-node-text
           (treesit-node-child-by-field-name node "name") t))
         (parameter-names
-         (remq nil (mapcar #'swift-ts-mode--parameter-name (treesit-node-children node "parameter")))))
+         (remq nil (mapcar #'swift-ts-mode--parameter-name (treesit-node-children node)))))
     (if (null parameter-names)
         (concat name "()")
       (concat name "(" (mapconcat 'identity parameter-names ":") ":)"))))
