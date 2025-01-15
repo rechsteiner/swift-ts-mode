@@ -435,13 +435,13 @@ Return nil if there is no name or if NODE is not a defun node."
 
     ;; Imenu.
     (setq-local treesit-simple-imenu-settings
-                `(("Init" "\\init_declaration\\'" nil nil)
-                  ("Func" "\\function_declaration\\'" nil nil)
-                  ("Enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
-                  ("Class" "\\class_declaration\\'" swift-ts-mode--class-node-p nil)
-                  ("Struct" "\\class_declaration\\'" swift-ts-mode--struct-node-p nil)
-                  ("Protocol" "\\protocol_declaration\\'" swift-ts-mode--protocol-node-p nil)
-                  ("Actor" "\\class_declaration\\'" swift-ts-mode--actor-node-p nil)))
+                `(("init" "\\init_declaration\\'" nil nil)
+                  ("func" "\\function_declaration\\'" nil nil)
+                  ("enum" "\\class_declaration\\'" swift-ts-mode--enum-node-p nil)
+                  ("class" "\\class_declaration\\'" swift-ts-mode--class-node-p nil)
+                  ("struct" "\\class_declaration\\'" swift-ts-mode--struct-node-p nil)
+                  ("protocol" "\\protocol_declaration\\'" swift-ts-mode--protocol-node-p nil)
+                  ("actor" "\\class_declaration\\'" swift-ts-mode--actor-node-p nil)))
 
     ;; Indentation
     (setq-local indent-tabs-mode nil
