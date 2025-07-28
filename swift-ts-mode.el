@@ -326,6 +326,7 @@
           (value_binding_pattern)
           name: (pattern
                  bound_identifier: (simple_identifier) @font-lock-variable-name-face))
+         (if_statement bound_identifier: (simple_identifier) @font-lock-variable-name-face)
          (simple_identifier) @font-lock-variable-use-face)
 
    :language 'swift
