@@ -278,7 +278,8 @@
        suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
 
      ((directive) @font-lock-preprocessor-face)
-     (call_expression (simple_identifier) @font-lock-function-call-face))
+         (call_expression (simple_identifier) @font-lock-function-call-face)
+         (macro_invocation (simple_identifier) @font-lock-function-call-face))
 
    :language 'swift
    :feature 'type
