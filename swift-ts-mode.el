@@ -327,7 +327,11 @@
 
    :language 'swift
    :feature 'variable
-       `(((simple_identifier) @font-lock-variable-use-face))
+       `((property_declaration
+          (value_binding_pattern)
+          name: (pattern
+                 bound_identifier: (simple_identifier) @font-lock-variable-name-face))
+         (simple_identifier) @font-lock-variable-use-face)
 
    :language 'swift
    :feature 'constant
