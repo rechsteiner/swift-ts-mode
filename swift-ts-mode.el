@@ -268,7 +268,8 @@
      (type_parameter (type_identifier) @font-lock-variable-name-face)
      (inheritance_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
      (equality_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
-     (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
+         (lambda_parameter (simple_identifier) @font-lock-variable-name-face)
+         (protocol_function_declaration name: (simple_identifier) @font-lock-function-name-face))
 
    :language 'swift
    :feature 'function
