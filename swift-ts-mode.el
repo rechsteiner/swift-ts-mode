@@ -276,12 +276,7 @@
       (navigation_expression
        suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
 
-     ;; TODO: Which feature does this belong?
-     (navigation_expression
-      suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-property-use-face))
-     
      ((directive) @font-lock-preprocessor-face)
-     (prefix_expression (simple_identifier) @font-lock-function-call-face)
      (call_expression (simple_identifier) @font-lock-function-call-face))
 
    :language 'swift
