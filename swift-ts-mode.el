@@ -327,7 +327,7 @@
 
    :language 'swift
    :feature 'variable
-   `(((simple_identifier) @font-lock-variable-ref-face))
+       `(((simple_identifier) @font-lock-variable-use-face))
 
    :language 'swift
    :feature 'constant
