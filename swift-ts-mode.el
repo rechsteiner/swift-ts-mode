@@ -278,13 +278,20 @@
        suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
 
      ((directive) @font-lock-preprocessor-face)
-         (call_expression (simple_identifier) @font-lock-function-call-face)
+         ;; distinguish from dictionary-access which has exact same syntax-tree
+         ;; except [ braces ] inside value_arguments.
+         (call_expression
+          (simple_identifier) @font-lock-function-call-face
+          (call_suffix
+           (value_arguments
+            ["("] @open-paren
+            (_) *
+            [")"])))
          (macro_invocation (simple_identifier) @font-lock-function-call-face))
 
    :language 'swift
    :feature 'type
    `(((type_identifier) @font-lock-type-face)
-     (call_expression (simple_identifier) @font-lock-type-face)
      (class_declaration (type_identifier) @font-lock-type-face)
      (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face)
      ((navigation_expression (simple_identifier) @font-lock-type-face)
