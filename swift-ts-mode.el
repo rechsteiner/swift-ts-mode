@@ -310,6 +310,8 @@
      (playground_literal "#" @font-lock-keyword-face)
      (key_path_string_expression "#" @font-lock-keyword-face)
      (key_path_string_expression "keyPath" @font-lock-keyword-face)
+     (macro_invocation "#" @font-lock-keyword-face)
+     (macro_invocation (simple_identifier) @font-lock-keyword-face)
      (lambda_literal "in" @font-lock-keyword-face)
      (for_statement "in" @font-lock-keyword-face)
      (for_statement "for" @font-lock-keyword-face)
