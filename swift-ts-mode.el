@@ -193,7 +193,7 @@
   '("typealias" "struct" "class" "actor" "enum" "protocol" "extension"
     "indirect" "nonisolated" "override" "convenience" "required" "some"
     "func" "import" "let" "var" "guard" "if" "switch" "case" "do"
-    "fallthrough" "return" "async" "await" "try" "try?" "try!" "nil" "unowned"
+    "fallthrough" "return" "async" "await" "try" "nil" "unowned"
     "while" "repeat" "continue" "break" "lazy" "weak" "didSet" "willSet" "init"
     "deinit" "as" "as?" "as!" "any" "mutating" "nonmutating"
     "#imageLiteral" "#colorLiteral" "#fileLiteral" "#keyPath" "#selector"
@@ -297,6 +297,8 @@
    :language 'swift
    :feature 'keyword
    `([,@swift-ts-mode--keywords] @font-lock-keyword-face
+     (try_operator "!" @font-lock-keyword-face)
+     (try_operator "?" @font-lock-keyword-face)
      (super_expression "super" @font-lock-keyword-face)
      (availability_condition "#available" @font-lock-keyword-face)
      (availability_condition "#unavailable" @font-lock-keyword-face)
