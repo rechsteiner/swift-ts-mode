@@ -261,14 +261,15 @@
    '(
      (function_declaration (simple_identifier) @font-lock-function-name-face)
      ;; TODO: Use custom font face with fallback on default for parameters.
-     (value_argument (simple_identifier) @font-lock-type-face)
+         (value_argument_label (simple_identifier) @font-lock-property-use-face)
      (parameter external_name: (simple_identifier) @font-lock-variable-name-face)
      (parameter name: (simple_identifier) @font-lock-variable-name-face)
      (tuple_type_item name: (simple_identifier) @font-lock-variable-name-face)
      (type_parameter (type_identifier) @font-lock-variable-name-face)
      (inheritance_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
      (equality_constraint (identifier (simple_identifier)) @font-lock-variable-name-face)
-     (lambda_parameter (simple_identifier) @font-lock-variable-name-face))
+         (lambda_parameter (simple_identifier) @font-lock-variable-name-face)
+         (protocol_function_declaration name: (simple_identifier) @font-lock-function-name-face))
 
    :language 'swift
    :feature 'function
@@ -276,18 +277,21 @@
       (navigation_expression
        suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-function-call-face)))
 
-     ;; TODO: Which feature does this belong?
-     (navigation_expression
-      suffix: (navigation_suffix suffix: (simple_identifier) @font-lock-property-use-face))
-     
      ((directive) @font-lock-preprocessor-face)
-     (prefix_expression (simple_identifier) @font-lock-function-call-face)
-     (call_expression (simple_identifier) @font-lock-function-call-face))
+         ;; distinguish from dictionary-access which has exact same syntax-tree
+         ;; except [ braces ] inside value_arguments.
+         (call_expression
+          (simple_identifier) @font-lock-function-call-face
+          (call_suffix
+           (value_arguments
+            ["("] @open-paren
+            (_) *
+            [")"])))
+         (macro_invocation (simple_identifier) @font-lock-preprocessor-face))
 
    :language 'swift
    :feature 'type
    `(((type_identifier) @font-lock-type-face)
-     (call_expression (simple_identifier) @font-lock-type-face)
      (class_declaration (type_identifier) @font-lock-type-face)
      (inheritance_specifier (user_type (type_identifier)) @font-lock-type-face)
      ((navigation_expression (simple_identifier) @font-lock-type-face)
@@ -310,8 +314,8 @@
      (playground_literal "#" @font-lock-keyword-face)
      (key_path_string_expression "#" @font-lock-keyword-face)
      (key_path_string_expression "keyPath" @font-lock-keyword-face)
-     (macro_invocation "#" @font-lock-keyword-face)
-     (macro_invocation (simple_identifier) @font-lock-keyword-face)
+     (macro_invocation "#" @font-lock-preprocessor-facee)
+     (macro_invocation (simple_identifier) @font-lock-preprocessor-face)
      (lambda_literal "in" @font-lock-keyword-face)
      (for_statement "in" @font-lock-keyword-face)
      (for_statement "for" @font-lock-keyword-face)
@@ -327,7 +331,13 @@
 
    :language 'swift
    :feature 'variable
-   `(((simple_identifier) @font-lock-variable-ref-face))
+       `((property_declaration
+          (value_binding_pattern)
+          name: (pattern
+                 bound_identifier: (simple_identifier) @font-lock-variable-name-face))
+         (if_statement bound_identifier: (simple_identifier) @font-lock-variable-name-face)
+         (guard_statement bound_identifier: (simple_identifier) @font-lock-variable-name-face)
+         (simple_identifier) @font-lock-variable-use-face)
 
    :language 'swift
    :feature 'constant
